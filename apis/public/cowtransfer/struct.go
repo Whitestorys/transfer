@@ -1,16 +1,18 @@
 package cowtransfer
 
 import (
-	"github.com/cheggaaa/pb/v3"
-	cmap "github.com/orcaman/concurrent-map"
 	"net/http"
 	"sync"
 	"time"
+
+	"github.com/cheggaaa/pb/v3"
+	cmap "github.com/orcaman/concurrent-map"
 )
 
 type requestConfig struct {
-	debug    bool
-	retry    int
+	debug  bool
+	action string
+	//retry    int
 	timeout  time.Duration
 	modifier func(r *http.Request)
 }
@@ -23,7 +25,7 @@ type uploadPart struct {
 
 type uploadConfig struct {
 	wg      *sync.WaitGroup
-	token   string
+	config  *initResp
 	hashMap *cmap.ConcurrentMap
 }
 
@@ -35,6 +37,15 @@ type cowOptions struct {
 	blockSize  int
 	hashCheck  bool
 	passCode   string
+}
+
+type initResp struct {
+	Token        string
+	TransferGUID string
+	FileGUID     string
+	EncodeID     string
+	Exp          int64  `json:"expireAt"`
+	ID           string `json:"uploadId"`
 }
 
 type prepareSendResp struct {
@@ -53,8 +64,21 @@ type beforeSendResp struct {
 }
 
 type uploadResponse struct {
-	Ticket string `json:"ctx"`
-	Hash   int    `json:"crc32"`
+	Etag string `json:"etag"`
+	MD5  string `json:"md5"`
+}
+
+type slek struct {
+	ETag string `json:"etag"`
+	Part int64  `json:"partNumber"`
+}
+
+type clds struct {
+	Parts    []slek `json:"parts"`
+	FName    string `json:"fname"`
+	Mimetype string `json:"mimeType"`
+	Metadata map[string]string
+	Vars     map[string]string
 }
 
 type finishResponse struct {
@@ -63,11 +87,15 @@ type finishResponse struct {
 }
 
 type downloadDetailsResponse struct {
-	GUID         string                 `json:"guid"`
-	DownloadName string                 `json:"downloadName"`
-	Deleted      bool                   `json:"deleted"`
-	Uploaded     bool                   `json:"uploaded"`
-	Details      []downloadDetailsBlock `json:"transferFileDtos"`
+	GUID         string `json:"guid"`
+	DownloadName string `json:"downloadName"`
+	Deleted      bool   `json:"deleted"`
+	Uploaded     bool   `json:"uploaded"`
+	// Details      []downloadDetailsBlock `json:"transferFileDtos"`
+}
+
+type downloadFilesResponse struct {
+	Details []downloadDetailsBlock `json:"transferFileDtos"`
 }
 
 type downloadDetailsBlock struct {

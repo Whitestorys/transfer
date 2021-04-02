@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/cheggaaa/pb/v3"
 	"io"
 	"io/ioutil"
 	"log"
@@ -17,6 +16,8 @@ import (
 	"time"
 	"transfer/apis"
 	"transfer/utils"
+
+	"github.com/cheggaaa/pb/v3"
 )
 
 const (
@@ -29,7 +30,7 @@ const (
 	chunkSize   = 15728640
 )
 
-var tokenRegex = regexp.MustCompile("csrf-token\" content=\"([a-zA-Z0-9+=/]{88})\"")
+var tokenRegex = regexp.MustCompile("csrf-token\"\\scontent=\"([a-zA-Z0-9_=-]+)\"\\s/>?")
 
 func (b *weTransfer) InitUpload(files []string, sizes []int64) error {
 	if b.Config.singleMode {
@@ -150,6 +151,7 @@ func (b weTransfer) FinishUpload([]string) (string, error) {
 
 func (b weTransfer) uploader(ch *chan *uploadPart, config *configBlock) {
 	for item := range *ch {
+	Start:
 		d, _ := json.Marshal(map[string]interface{}{
 			"chunk_number": item.count,
 			"chunk_size":   len(item.content),
@@ -166,8 +168,7 @@ func (b weTransfer) uploader(ch *chan *uploadPart, config *configBlock) {
 			if apis.DebugMode {
 				log.Printf("get upload url request returns error: %v", err)
 			}
-			*ch <- item
-			continue
+			goto Start
 		}
 
 		client := http.Client{Timeout: time.Duration(b.Config.interval) * time.Second}
@@ -189,8 +190,7 @@ func (b weTransfer) uploader(ch *chan *uploadPart, config *configBlock) {
 			if apis.DebugMode {
 				log.Printf("build request returns error: %v", err)
 			}
-			*ch <- item
-			continue
+			goto Start
 		}
 		req.ContentLength = int64(len(item.content))
 		req.Header.Set("content-type", "application/octet-stream")
@@ -199,16 +199,14 @@ func (b weTransfer) uploader(ch *chan *uploadPart, config *configBlock) {
 			if apis.DebugMode {
 				log.Printf("failed uploading part %d error: %v (retrying)", item.count, err)
 			}
-			*ch <- item
-			continue
+			goto Start
 		}
 		_, err = ioutil.ReadAll(resp.Body)
 		if err != nil {
 			if apis.DebugMode {
 				log.Printf("failed uploading part %d error: %v (retrying)", item.count, err)
 			}
-			*ch <- item
-			continue
+			goto Start
 		}
 
 		_ = resp.Body.Close()
@@ -280,6 +278,9 @@ func (b *weTransfer) getTicket() (requestTicket, error) {
 	_ = resp.Body.Close()
 	tk := tokenRegex.FindSubmatch(body)
 	if apis.DebugMode {
+		// parsedBody := strings.TrimSpace(string(body))
+		// parsedBody = strings.Trim(parsedBody, "\n")
+		// log.Println("returns: ", parsedBody)
 		log.Println("returns: ", string(tk[0]), string(tk[1]))
 	}
 	if len(tk) == 0 {
@@ -407,6 +408,7 @@ func newRequest(link string, postBody string, config requestConfig) (*configBloc
 func addToken(token requestTicket) func(req *http.Request) {
 	return func(req *http.Request) {
 		addHeaders(req)
+		req.Header.Set("x-requested-with", "XMLHttpRequest")
 		req.Header.Set("x-csrf-token", token.token)
 		req.Header.Set("cookie", token.cookies)
 	}
@@ -415,6 +417,6 @@ func addToken(token requestTicket) func(req *http.Request) {
 func addHeaders(req *http.Request) {
 	req.Header.Set("Referer", "https://wetransfer.com/")
 	req.Header.Set("content-type", "application/json;charset=UTF-8")
-	req.Header.Set("User-Agent", "Chrome/80.0.3987.149 Wenshushu-Uploader")
+	req.Header.Set("User-Agent", "Chrome/80.0.3987.149 Wetransfer-Uploader")
 	req.Header.Set("Origin", "https://wetransfer.com/")
 }

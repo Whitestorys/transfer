@@ -6,6 +6,12 @@
 
 Large file transfer tool with multiple file transfer services support
 
+## note
+
+部分API可能不是很稳定，如有问题可以及时提issue或者pr
+
+如使用过程中出现任何问题可以先尝试使用beta版程序，说不定已经修复过了这个bug
+
 ## install
 
 Go语言程序, 可直接在[发布页](https://github.com/Mikubill/transfer/releases)下载使用。
@@ -13,7 +19,11 @@ Go语言程序, 可直接在[发布页](https://github.com/Mikubill/transfer/rel
 或者使用安装脚本:
 
 ```shell script
+# Stable Release
 curl -sL https://git.io/file-transfer | sh 
+
+# Beta Release
+curl -sL https://git.io/file-transfer | bash -s beta
 ```
 
 Github Action中有实时构建版本，如有需要可以在Github Action的构建日志中查看下载链接。
@@ -22,49 +32,22 @@ Github Action中有实时构建版本，如有需要可以在Github Action的构
 
 目前支持的文件传输服务:
 
-|  Name   | Site  | Limit | Provider |
-|  ----  | ----  |  ----  |  ----  |
-| Airportal | https://airportal.cn/ | - | Aliyun |
-| CatBox | https://catbox.moe/ | 100MB | Psychz |
-| CowTransfer | https://www.cowtransfer.com/ | 2GB | Qiniu |
-| GoFile | https://gofile.io/ | - | - |
-| Vim-cn | https://img.vim-cn.com/ | 100MB | CloudFlare |
-| WenShuShu | https://www.wenshushu.cn/ | 5GB | QCloud |
-| WeTransfer | https://wetransfer.com/ | 2GB | CloudFront |
-| FileLink | https://filelink.io/ | - | GCE |
-| Transfer.sh | https://transfer.sh/ | - | Hetzner |
-| Lanzous | https://www.lanzous.com/ | login only | - |
+```
+airportal(arp), catbox(cat), cowtransfer(cow), fileio(fio),
+gofile(gof), lanzous(lzs), litterbox(lit), null(0x0), 
+wetransfer(wet), vimcn(vim), notion(not)
+```
 
-不支持的传输服务
-
-|  Name   | Site  | Limit | Provider |
-|  ----  | ----  |  ----  |  ----  |
-| bitSend | https://bitsend.jp/ | - | OVH |
-| TmpLink | https://tmp.link/ | - | - |
+[notion上传相关说明](https://github.com/Mikubill/transfer#notion)
 
 [登陆上传相关说明](https://github.com/Mikubill/transfer#login)
 
 目前支持的图床服务:
 
-|  Name   | Limit  | 
-|  ----  | ----  |
-| Ali | 5MB |
-| Baidu | 10MB |
-| CCUpload | 20MB (region limit) |
-| Juejin | 20MB |
-| Netease | 10MB |
-| Prntscr | 10MB |
-| SMMS | 5MB |
-| Sugou | 10MB |
-| Toutiao | - |
-| Xiaomi | - |
-| Suning | - |
-
-开发中的服务
-
-|  Name   | Site  | Limit |
-|  ----  | ----  |  ----  |
-| Firefox Send | https://send.firefox.com/ | 1GB |
+```
+baidu(bd), ccupload(cc), prntscr(pr), smms(sm), sogou(sg), 
+toutiao(tt), vimcn(vm), suning(sn), telegraph(tg)
+```
 
 ## usage 
 
@@ -72,18 +55,9 @@ Github Action中有实时构建版本，如有需要可以在Github Action的构
 Transfer is a very simple big file transfer tool.
 
 Backend Support:
-  arp  -  Airportal  -  https://aitportal.cn/
-  bit  -  bitSend  -  https://bitsend.jp/
-  cat  -  CatBox  -  https://catbox.moe/
-  cow  -  CowTransfer  -  https://www.cowtransfer.com/
-  gof  -  GoFile  -  https://gofile.io/
-  tmp  -  TmpLink  -  https://tmp.link/
-  vim  -  Vim-cn  -  https://img.vim-cn.com/
-  wss  -  WenShuShu  -  https://www.wenshushu.cn/
-  wet  -  WeTransfer  -  https://wetransfer.com/
-  flk  -  FileLink  -  https://filelink.io/
-  trs  -  Transfer.sh  -  https://transfer.sh/
-  lzs  -  Lanzous  -  https://www.lanzous.com/
+  airportal(arp), catbox(cat), cowtransfer(cow), fileio(fio),
+  gofile(gof), lanzous(lzs), litterbox(lit), null(0x0), 
+  wetransfer(wet), vimcn(vim)
 
 Usage:
   transfer [flags]
@@ -226,6 +200,38 @@ Encrypt using key: 123
 Warning: crypto mode is enabled.
 Note: Crypto mode is not compatible with multi thread download mode, setting parallel to 1.
 ...
+```
+
+### notion
+
+notion的上传需要以下参数
+
+所有参数不带符号，即形如`ce6ad860c0864286a4392d6c2e786e8`即可。
+
+```
+-p Page ID
+```
+必须，即页面链接中的那个一大长串的ID。建议直接使用Workspace的次级页面作为上传目标以便程序能自动获取当前Workspace ID，否则需要通过 -s 参数指定 Space ID。
+
+```
+-t token
+```
+必须，即cookie中的`www.notion.so -> token_v2`项。
+
+```
+-s Workspace ID
+```
+非必须，适用于非次级页面/嵌套的情况，手动设定Workspace ID
+
+上传后默认返回一个自动签名链接，私有页面可以在浏览器登录状态下直接点击下载。对于公开页面的文件链接，可以尝试去掉userid使用，但必须保留id和table两项。
+
+Example
+```bash
+❯ ./transfer not -p ... -t ... install.sh        
+Local: /.../install.sh
+1.03 KiB / 1.03 KiB [--------------------] 100.00% 810 B p/s 2s
+syncing blocks....
+Download Link: https://www.notion.so/signed/https%3A%2F%2Fs3-us-west-2.amazonaws.com%2Fsecure.notion-static.com%2F...%2Finstall.sh?table=block&id=...&name=install.sh&userId=...&cache=v2
 ```
 
 ### login 

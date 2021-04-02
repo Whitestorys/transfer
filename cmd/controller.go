@@ -1,50 +1,67 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
 	"transfer/apis"
 	"transfer/apis/public/airportal"
+	"transfer/apis/public/fileio"
+	"transfer/apis/public/null"
+
+	"github.com/spf13/cobra"
+
 	//"transfer/apis/public/bitsend"
 	"transfer/apis/public/catbox"
 	"transfer/apis/public/cowtransfer"
-	"transfer/apis/public/filelink"
+
+	// "transfer/apis/public/filelink"
 	"transfer/apis/public/gofile"
 	"transfer/apis/public/lanzous"
+	"transfer/apis/public/litterbox"
+
 	//"transfer/apis/public/tmplink"
 	"transfer/apis/public/transfer"
 	"transfer/apis/public/vimcn"
-	"transfer/apis/public/wenshushu"
+
+	// "transfer/apis/public/wenshushu"
+	"transfer/apis/public/notion"
 	"transfer/apis/public/wetransfer"
 )
 
 var (
 	baseString = [][]string{
 		{"cow", "cowtransfer"},
-		{"wss", "wenshushu"},
-		//{"bit", "bitsend"},
-		//{"tmp", "tmplink"},
+		// {"wss", "wenshushu"},
+		// {"bit", "bitsend"},
+		// {"tmp", "tmplink"},
 		{"cat", "catbox"},
+		{"lit", "littlebox"},
 		{"vim", "vimcn"},
 		{"gof", "gofile"},
 		{"wet", "wetransfer"},
 		{"arp", "airportal"},
-		{"flk", "filelink"},
+		// {"flk", "filelink"},
 		{"trs", "transfer.sh"},
 		{"lzs", "lanzous"},
+		{"0x0", "null"},
+		{"fio", "file.io"},
+		{"not", "notion", "notion.so"},
 	}
 	baseBackend = []apis.BaseBackend{
 		cowtransfer.Backend,
-		wenshushu.Backend,
+		// wenshushu.Backend,
 		//bitsend.Backend,
 		//tmplink.Backend,
 		catbox.Backend,
+		litterbox.Backend,
 		vimcn.Backend,
 		gofile.Backend,
 		wetransfer.Backend,
 		airportal.Backend,
-		filelink.Backend,
+		// filelink.Backend,
 		transfer.Backend,
 		lanzous.Backend,
+		null.Backend,
+		fileio.Backend,
+		notion.Backend,
 	}
 )
 

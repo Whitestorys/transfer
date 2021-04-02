@@ -3,11 +3,12 @@ package cmd
 import (
 	"bufio"
 	"fmt"
-	"github.com/spf13/cobra"
 	"os"
 	"strings"
 	"transfer/apis"
-	"transfer/apis/public/transfer"
+	"transfer/apis/public/null"
+
+	"github.com/spf13/cobra"
 )
 
 var (
@@ -18,22 +19,13 @@ var (
 Transfer is a very simple big file transfer tool.
 
 Backend Support:
-  arp  -  Airportal  -  https://aitportal.cn/
-  bit  -  bitSend  -  https://bitsend.jp/
-  cat  -  CatBox  -  https://catbox.moe/    
-  cow  -  CowTransfer  -  https://www.cowtransfer.com/  
-  gof  -  GoFile  -  https://gofile.io/
-  tmp  -  TmpLink  -  https://tmp.link/     
-  vim  -  Vim-cn  -  https://img.vim-cn.com/    
-  wss  -  WenShuShu  -  https://www.wenshushu.cn/  
-  wet  -  WeTransfer  -  https://wetransfer.com/  
-  flk  -  FileLink  -  https://filelink.io/
-  trs  -  Transfer.sh  -  https://transfer.sh/
-  lzs  -  Lanzous  -  https://www.lanzous.com/
+  airportal(arp), catbox(cat), cowtransfer(cow), fileio(fio),
+  gofile(gof), lanzous(lzs), litterbox(lit), null(0x0), 
+  wetransfer(wet), vimcn(vim), notion(not)
 `,
 		SilenceErrors: true,
-		Example: `  # upload via wenshushu
-  ./transfer wss <your-file>
+		Example: `  # upload via gofile
+  ./transfer gof <your-file>
 
   # download link
   ./transfer https://.../`,
@@ -107,10 +99,10 @@ func handleRootTransfer(args []string) {
 	files := uploadWalker(args)
 	if len(files) != 0 {
 		if !apis.MuteMode {
-			fmt.Println("Warning: backend is not set. Using default: transfer.backend - <transfer.sh>")
+			fmt.Println("Warning: backend is not set. Using default: null.backend - <0x0.st>")
 			fmt.Printf("Run 'transfer --help' for usage.\n\n")
 		}
-		apis.Upload(files, transfer.Backend)
+		apis.Upload(files, null.Backend)
 		return
 	}
 
